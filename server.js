@@ -36,10 +36,11 @@ io.on('connection', (socket) => {
     
     console.log(`Jogador ${socket.id} entrou como ${nickname} (${playerModel})`);
 
+    // ---- O SPAWN AJEITADO ----
     players[socket.id] = {
-      x: Math.random() * 10 - 5, // Posição aleatória
-      y: 0,
-      z: Math.random() * 10 - 5,
+      x: 10, // <-- SPAWN SEGURO
+      y: 0,  // <-- NO CHÃO
+      z: 10, // <-- SPAWN SEGURO
       playerId: socket.id,
       nickname: nickname,
       model: playerModel, // "knight.glb" ou "mage.glb"

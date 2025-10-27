@@ -1,5 +1,5 @@
 // ===================================
-// ARQUIVO: server.js (v5.0 - COMBATE!)
+// ARQUIVO: server.js (v6.0 - PROJETO PRONTO)
 // ===================================
 
 const express = require('express');
@@ -16,29 +16,36 @@ const io = new Server(server, {
 });
 
 app.get('/', (req, res) => {
-  res.send('Servidor do Jogo esta ONLINE! (v5.0 com Combate)');
+  res.send('Servidor do Jogo esta ONLINE! (v6.0 - Projeto Pronto)');
 });
 
 let players = {};
+// Nossos novos personagens
+const models = ['guerreiro', 'maga']; 
 
 io.on('connection', (socket) => {
   console.log(`Socket conectado: ${socket.id}`);
 
   // Ouve o pedido de "Start" do jogador
   socket.on('playerJoinRequest', (data) => {
-    const { nickname, model } = data;
-    console.log(`Jogador ${socket.id} entrou como ${nickname} (${model})`);
+    const { nickname } = data;
+    
+    // Alterna os personagens
+    const playerCount = Object.keys(players).length;
+    const playerModel = models[playerCount % 2];
+    
+    console.log(`Jogador ${socket.id} entrou como ${nickname} (${playerModel})`);
 
     players[socket.id] = {
-      x: 0, y: 0, z: 0,
+      x: Math.random() * 10 - 5, // Posição aleatória
+      y: 0,
+      z: Math.random() * 10 - 5,
       playerId: socket.id,
       nickname: nickname,
-      model: model,
+      model: playerModel, // "guerreiro" ou "maga"
       hp: 100,
       maxHp: 100,
-      // ---- NOVO SISTEMA DE ADMIN ----
-      // (Baseado no seu nome que eu tenho no contexto)
-      isAdmin: (nickname.toLowerCase() === 'victor rocha') 
+      isAdmin: (nickname.toLowerCase().includes('victor')) // Admin se o nick tiver "Victor"
     };
 
     socket.emit('currentPlayers', players);
@@ -52,46 +59,42 @@ io.on('connection', (socket) => {
       players[socket.id].x = movementData.x;
       players[socket.id].y = movementData.y;
       players[socket.id].z = movementData.z;
+      
+      // ---- ROTAÇÃO! ----
+      // Também vamos salvar para onde o jogador está olhando
+      players[socket.id].rotationY = movementData.rotationY;
+
       socket.broadcast.emit('playerMoved', {
         playerId: socket.id,
-        position: players[socket.id]
+        position: players[socket.id],
+        rotation: players[socket.id].rotationY
       });
     }
   });
   
-  // ---- NOVO SISTEMA DE COMBATE ----
+  // Sistema de Combate (ATAQUE)
   socket.on('useSkill1', (targetId) => {
     const attacker = players[socket.id];
     const victim = players[targetId];
 
-    // Se o atacante ou a vítima não existem (ex: já morreram), para.
     if (!attacker || !victim) return;
-
-    // Admin não pode ser morto (exemplo)
     if (victim.isAdmin) {
-      // Manda uma mensagem só para o atacante
       socket.emit('showGameMessage', 'Você não pode atacar um Admin!');
       return;
     }
 
-    // Causa 34 de dano
-    victim.hp -= 34;
+    victim.hp -= 34; // 3 hits para matar
     
     if (victim.hp <= 0) {
       victim.hp = 0;
-      // Vítima morreu
-      console.log(`Jogador ${victim.nickname} foi morto por ${attacker.nickname}`);
-      // Avisa a todos que a vítima morreu
       io.emit('playerKilled', { 
         victimId: victim.playerId, 
         attackerId: attacker.playerId,
         victimNick: victim.nickname,
         attackerNick: attacker.nickname
       });
-      // Remove o jogador morto
       delete players[victim.playerId];
     } else {
-      // Apenas atualiza o HP
       io.emit('updateHP', { 
         playerId: victim.playerId, 
         hp: victim.hp 
@@ -106,7 +109,6 @@ io.on('connection', (socket) => {
     if(players[socket.id]) {
       const nick = players[socket.id].nickname;
       delete players[socket.id];
-      // Avisa a todos que o jogador saiu (não "morreu")
       io.emit('playerDisconnected', {playerId: socket.id, nick: nick});
     }
   });
@@ -114,5 +116,5 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => {
-  console.log(`Servidor v5.0 (Combate) rodando na porta ${PORT}`);
+  console.log(`Servidor v6.0 (Projeto Pronto) rodando na porta ${PORT}`);
 });

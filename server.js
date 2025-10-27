@@ -1,5 +1,5 @@
 // ===================================
-// ARQUIVO: server.js (v7.0 - ARQUIVOS LOCAIS)
+// ARQUIVO: server.js (v8.0 - O PROJETO PRONTO)
 // ===================================
 
 const express = require('express');
@@ -16,12 +16,12 @@ const io = new Server(server, {
 });
 
 app.get('/', (req, res) => {
-  res.send('Servidor do Jogo esta ONLINE! (v7.0 - Arquivos Locais)');
+  res.send('Servidor do Jogo esta ONLINE! (v8.0 - Projeto Pronto)');
 });
 
 let players = {};
-// Nossos novos personagens (nomes dos arquivos)
-const models = ['knight.glb', 'mage.glb']; 
+// Nossos novos personagens (leves)
+const models = ['soldier', 'mage']; 
 
 io.on('connection', (socket) => {
   console.log(`Socket conectado: ${socket.id}`);
@@ -36,14 +36,14 @@ io.on('connection', (socket) => {
     
     console.log(`Jogador ${socket.id} entrou como ${nickname} (${playerModel})`);
 
-    // ---- O SPAWN AJEITADO ----
+    // SPAWN SEGURO NA NOVA ARENA
     players[socket.id] = {
-      x: 10, // <-- SPAWN SEGURO
-      y: 0,  // <-- NO CHÃO
-      z: 10, // <-- SPAWN SEGURO
+      x: Math.random() * 10 - 5, // Posição aleatória no centro
+      y: 0.1, // Um pouco acima do chão
+      z: Math.random() * 10 - 5,
       playerId: socket.id,
       nickname: nickname,
-      model: playerModel, // "knight.glb" ou "mage.glb"
+      model: playerModel, // "soldier" ou "mage"
       hp: 100,
       maxHp: 100,
       isAdmin: (nickname.toLowerCase().includes('victor'))
@@ -109,5 +109,5 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => {
-  console.log(`Servidor v7.0 (Arquivos Locais) rodando na porta ${PORT}`);
+  console.log(`Servidor v8.0 (Projeto Pronto) rodando na porta ${PORT}`);
 });

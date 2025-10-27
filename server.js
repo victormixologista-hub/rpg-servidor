@@ -1,5 +1,5 @@
 // ===================================
-// ARQUIVO: server.js (v6.0 - PROJETO PRONTO)
+// ARQUIVO: server.js (v7.0 - ARQUIVOS LOCAIS)
 // ===================================
 
 const express = require('express');
@@ -16,12 +16,12 @@ const io = new Server(server, {
 });
 
 app.get('/', (req, res) => {
-  res.send('Servidor do Jogo esta ONLINE! (v6.0 - Projeto Pronto)');
+  res.send('Servidor do Jogo esta ONLINE! (v7.0 - Arquivos Locais)');
 });
 
 let players = {};
-// Nossos novos personagens
-const models = ['guerreiro', 'maga']; 
+// Nossos novos personagens (nomes dos arquivos)
+const models = ['knight.glb', 'mage.glb']; 
 
 io.on('connection', (socket) => {
   console.log(`Socket conectado: ${socket.id}`);
@@ -42,10 +42,10 @@ io.on('connection', (socket) => {
       z: Math.random() * 10 - 5,
       playerId: socket.id,
       nickname: nickname,
-      model: playerModel, // "guerreiro" ou "maga"
+      model: playerModel, // "knight.glb" ou "mage.glb"
       hp: 100,
       maxHp: 100,
-      isAdmin: (nickname.toLowerCase().includes('victor')) // Admin se o nick tiver "Victor"
+      isAdmin: (nickname.toLowerCase().includes('victor'))
     };
 
     socket.emit('currentPlayers', players);
@@ -59,9 +59,6 @@ io.on('connection', (socket) => {
       players[socket.id].x = movementData.x;
       players[socket.id].y = movementData.y;
       players[socket.id].z = movementData.z;
-      
-      // ---- ROTAÇÃO! ----
-      // Também vamos salvar para onde o jogador está olhando
       players[socket.id].rotationY = movementData.rotationY;
 
       socket.broadcast.emit('playerMoved', {
@@ -83,22 +80,17 @@ io.on('connection', (socket) => {
       return;
     }
 
-    victim.hp -= 34; // 3 hits para matar
+    victim.hp -= 34;
     
     if (victim.hp <= 0) {
       victim.hp = 0;
       io.emit('playerKilled', { 
-        victimId: victim.playerId, 
-        attackerId: attacker.playerId,
-        victimNick: victim.nickname,
-        attackerNick: attacker.nickname
+        victimId: victim.playerId, attackerId: attacker.playerId,
+        victimNick: victim.nickname, attackerNick: attacker.nickname
       });
       delete players[victim.playerId];
     } else {
-      io.emit('updateHP', { 
-        playerId: victim.playerId, 
-        hp: victim.hp 
-      });
+      io.emit('updateHP', { playerId: victim.playerId, hp: victim.hp });
     }
   });
 
@@ -116,5 +108,5 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => {
-  console.log(`Servidor v6.0 (Projeto Pronto) rodando na porta ${PORT}`);
+  console.log(`Servidor v7.0 (Arquivos Locais) rodando na porta ${PORT}`);
 });
